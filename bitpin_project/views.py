@@ -33,22 +33,19 @@ class RatingCreateUpdateView(generics.CreateAPIView):
 
         try:
             rating = Rating.objects.get(user_id=user_id, post_id=post_id)
-            old_value = rating.value
             rating.value = value
             rating.save()
             Post.objects.filter(id=post_id).update(
                 average_rating=(Decimal(value) * ALPHA) + (models.F('average_rating') * (1 - ALPHA))
-                # average_rating=models.F('average_rating') - (old_value - float(value)) / models.F('total_ratings')
             )
         except Rating.DoesNotExist:
-            rating = Rating.objects.create(user_id=user_id, post_id=post_id, value=value)
             Post.objects.filter(id=post_id).update(
                 total_ratings=models.F('total_ratings') + 1,
                 average_rating=(Decimal(value) * ALPHA) + (models.F('average_rating') * (1 - ALPHA))
             )
-            # Post.objects.filter(id=post_id).update(
-            #     total_ratings=models.F('total_ratings') + 1,
-            #     average_rating=(models.F('average_rating') * models.F('total_ratings') + float(value)) / (models.F('total_ratings') + 1)
-            # )
 
         return Response({'message': 'Rating recorded successfully.'}, status=status.HTTP_200_OK)
+
+class PostCreateView(generics.CreateAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer

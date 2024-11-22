@@ -11,11 +11,8 @@ class PostSerializer(serializers.ModelSerializer):
     def get_user_rating(self, obj):
         user_id = self.context['request'].query_params.get('user_id')
         if user_id:
-            try:
-                rating = obj.ratings.get(user_id=user_id)
-                return rating.value
-            except Rating.DoesNotExist:
-                return None
+            rating = obj.ratings.filter(user_id=user_id).first()
+            return rating.value if rating else None
         return None
 
 
