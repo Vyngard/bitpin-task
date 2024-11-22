@@ -5,7 +5,7 @@ from .models import Post, Rating
 from .serializers import PostSerializer, RatingSerializer
 from decimal import Decimal
 
-ALPHA = Decimal('0.1')
+
 
 class PostListView(generics.ListAPIView):
     queryset = Post.objects.all()
@@ -27,12 +27,26 @@ class RatingCreateUpdateView(generics.CreateAPIView):
         post_id = request.data.get('post')
         value = request.data.get('value')
 
-        if not (0 <= float(value) <= 5):
+        # Validate the rating value
+        try:
+            value = float(value)
+            if not (0 <= value <= 5):
+                raise ValueError
+        except (TypeError, ValueError):
             return Response({'error': 'Rating value must be between 0 and 5.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
+        # Get the post object
         try:
-            rating = Rating.objects.get(user_id=user_id, post_id=post_id)
+            post = Post.objects.select_for_update().get(id=post_id)
+        except Post.DoesNotExist:
+            return Response({'error': 'Post does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        ALPHA = Decimal('0.1')
+
+       # Get the rating object if it exists
+        try:
+            rating = Rating.objects.get(user_id=user_id, post=post)
             rating.value = value
             rating.save()
             Post.objects.filter(id=post_id).update(
@@ -57,7 +71,6 @@ class PostResetView(generics.GenericAPIView):
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
-        # Get the post ID from the request data
         post_id = request.data.get('post')
 
         if not post_id:
