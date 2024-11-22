@@ -49,3 +49,32 @@ class RatingCreateUpdateView(generics.CreateAPIView):
 class PostCreateView(generics.CreateAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+
+
+class PostResetView(generics.GenericAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+
+    @transaction.atomic
+    def post(self, request, *args, **kwargs):
+        # Get the post ID from the request data
+        post_id = request.data.get('post')
+
+        if not post_id:
+            return Response({'error': 'Post ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return Response({'error': 'Post does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Reset the post's fields
+        post.total_ratings = 0
+        post.average_rating = 0
+        post.save(update_fields=['total_ratings', 'average_rating'])
+
+        # Delete all ratings associated with this post
+        Rating.objects.filter(post_id=post_id).delete()
+
+        return Response({'message': 'Post and associated ratings have been reset successfully.'},
+                        status=status.HTTP_200_OK)
