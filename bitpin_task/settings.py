@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'bitpin_project',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
