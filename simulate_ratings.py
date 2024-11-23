@@ -11,7 +11,7 @@ POST_RESET_URL = 'http://127.0.0.1:8000/reset_post/'
 post_id = 1  # assuming a post with this ID exists
 num_ratings = 20  # Number of people that rating
 ratings_values = [1, 5]  # Ratings values to simulate
-method = EMA_URL  # URL to use for submitting ratings
+method = EMA_URL  # Choose between EMA_URL, DYNAMIC_EMA_URL to compare it to Simple Average
 
 def submit_rating(url, user_id, value):
     data = {

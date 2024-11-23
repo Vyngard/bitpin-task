@@ -39,7 +39,7 @@ python manage.py runserver
     - Method: GET
     - Description: Returns a list of all posts.
     - Query Parameters:
-      - user_id (optional): The identifier of the user to get their rating.
+      - `user_id` (optional): The identifier of the user to get their rating.
     - Example:
         ```bash
         curl -X GET 'http://127.0.0.1:8000/posts/?user_id=user1'
@@ -187,13 +187,32 @@ To run the file:
 post_id = 1  # Assuming a post with this ID exists
 num_ratings = 20  # Number of users submitting ratings
 ratings_values = [1, 5]  # Ratings values to simulate
-method = EMA_URL  # URL to use for submitting ratings (change as needed)
+method = EMA_URL  # Choose between EMA_URL, DYNAMIC_EMA_URL to compare it to Simple Average
 ```
 6- run the script using
 ```bash
 python simulate_ratings.py
 ```
 7- you can see the results in the terminal.    
+
+## Description of Average Rating Calculation Methods
+1. **Simple Average Method (Implemented in: `views_simple_average.py`)**  
+The Simple Average method calculates the average rating by taking the arithmetic mean of all the ratings submitted for a post. 
+It is a straightforward calculation where each rating has an equal impact on the average.
+
+![simple_average.png](formula_imgs/simple_average.png)
+
+2. **Fixed ALPHA Exponential Moving Average (EMA) Method (Implemented in: `views.py`)**   
+The Fixed ALPHA EMA method calculates the average rating using an Exponential Moving Average formula with a fixed smoothing factor `(α)`. 
+This approach gives more weight to older ratings and less weight to new ones, providing a damping effect against sudden changes.
+
+![fixed_alpha.png](formula_imgs/fixed_alpha.png)    
+
+3. **Dynamic ALPHA Exponential Moving Average (EMA) Method (Implemented in: `views_dynamic_alpha.py`)**    
+The Dynamic ALPHA EMA method improves upon the Fixed ALPHA EMA by adjusting the smoothing factor `(α)` based on the total number of ratings. 
+This allows the method to be more responsive when there are fewer ratings and more stable as the number of ratings increases.    
+
+![dynamic_alpha.png](formula_imgs/dynamic_alpha.png)    
 
 ## Performance Considerations
 - Denormalization: The `Post` model stores `total_ratings` and `average_rating` to avoid expensive aggregation queries.
