@@ -11,5 +11,3 @@ urlpatterns = [
     path('reset_post/', PostResetView.as_view(), name='reset_post'),
     path('rate_dynamic/', RatingCreateUpdateViewDynamicAlpha.as_view(), name='rate-post-dynamic'),
 ]
-
-# TODO: add views_simple_average.py and views_dynamic_alpha.py 
