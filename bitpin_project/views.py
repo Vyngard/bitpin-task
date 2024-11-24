@@ -20,8 +20,6 @@ class RatingCreateUpdateView(generics.CreateAPIView):
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
-        from django.db import IntegrityError
-
         user_id = request.data.get('user_id')
         post_id = request.data.get('post')
         value = request.data.get('value')
@@ -45,12 +43,11 @@ class RatingCreateUpdateView(generics.CreateAPIView):
         )
 
         if created:
-            # Increment total_ratings atomically
             Post.objects.filter(id=post_id).update(
                 total_ratings=F('total_ratings') + 1
             )
 
-        # Update average_rating atomically using ExpressionWrapper and float types
+        # Update average rating atomically
         Post.objects.filter(id=post_id).update(
             average_rating=ExpressionWrapper(
                 (value * ALPHA) + (F('average_rating') * (1 - ALPHA)),
@@ -80,7 +77,7 @@ class PostResetView(generics.GenericAPIView):
         except Post.DoesNotExist:
             return Response({'error': 'Post does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Reset the post's fields
+        # Reset the posts fields
         post.total_ratings = 0
         post.average_rating = 0.0
         post.save(update_fields=['total_ratings', 'average_rating'])

@@ -34,19 +34,18 @@ class RatingCreateUpdateViewDynamicAlpha(generics.CreateAPIView):
         )
 
         if created:
-            # Atomically increment total_ratings
             Post.objects.filter(id=post_id).update(
                 total_ratings=F('total_ratings') + 1
             )
 
-        # Retrieve the updated total_ratings
+        # Retrieve the updated total ratings
         post = Post.objects.get(id=post_id)
         total_ratings = post.total_ratings
 
-        # Calculate dynamic ALPHA as a float
+        # Calculate dynamic alpha
         DYNAMIC_ALPHA = 1.0 / total_ratings
 
-        # Update average_rating atomically using float types
+        # Update average_rating atomically
         Post.objects.filter(id=post_id).update(
             average_rating=ExpressionWrapper(
                 (value * DYNAMIC_ALPHA) + (F('average_rating') * (1.0 - DYNAMIC_ALPHA)),
