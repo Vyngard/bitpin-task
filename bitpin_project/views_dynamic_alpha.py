@@ -1,5 +1,5 @@
-from decimal import Decimal
 from django.db import transaction
+from django.db.models import F, ExpressionWrapper, FloatField
 from rest_framework import generics, status
 from rest_framework.response import Response
 from .models import Post, Rating
@@ -18,45 +18,45 @@ class RatingCreateUpdateViewDynamicAlpha(generics.CreateAPIView):
         # Validate the rating value
         try:
             value = float(value)
-            if not (0 <= value <= 5):
+            if not (0.0 <= value <= 5.0):
                 raise ValueError
         except (TypeError, ValueError):
-            return Response({'error': 'Rating value must be between 0 and 5.'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'error': 'Rating value must be between 0 and 5.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        # Get the post object
-        try:
-            post = Post.objects.select_for_update().get(id=post_id)
-        except Post.DoesNotExist:
-            return Response({'error': 'Post does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+        # Update or create the rating
+        rating, created = Rating.objects.update_or_create(
+            user_id=user_id,
+            post_id=post_id,
+            defaults={'value': value}
+        )
 
-        # Get the rating object if it exists
-        try:
-            rating = Rating.objects.get(user_id=user_id, post=post)
-            rating.value = value
-            rating.save()
-            total_ratings = post.total_ratings
-        except Rating.DoesNotExist:
-            post.total_ratings += 1
-            total_ratings = post.total_ratings
+        if created:
+            # Atomically increment total_ratings
+            Post.objects.filter(id=post_id).update(
+                total_ratings=F('total_ratings') + 1
+            )
 
-            # If this is the first rating, set average_rating directly
-            if total_ratings == 1:
-                post.average_rating = Decimal(value)
-                post.save(update_fields=['total_ratings', 'average_rating'])
-                return Response({'message': 'Rating recorded successfully.'}, status=status.HTTP_200_OK)
+        # Retrieve the updated total_ratings
+        post = Post.objects.get(id=post_id)
+        total_ratings = post.total_ratings
 
-        # Calculate dynamic ALPHA
-        DYNAMIC_ALPHA = Decimal('1') / Decimal(total_ratings)
+        # Calculate dynamic ALPHA as a float
+        DYNAMIC_ALPHA = 1.0 / total_ratings
 
-        # Update average_rating using EMA with dynamic ALPHA
-        average_rating_old = Decimal(post.average_rating)
-        average_rating_new = (Decimal(value) * DYNAMIC_ALPHA) + (average_rating_old * (Decimal('1') - DYNAMIC_ALPHA))
+        # Update average_rating atomically using float types
+        Post.objects.filter(id=post_id).update(
+            average_rating=ExpressionWrapper(
+                (value * DYNAMIC_ALPHA) + (F('average_rating') * (1.0 - DYNAMIC_ALPHA)),
+                output_field=FloatField()
+            )
+        )
 
-        # Update the post's average_rating
-        post.average_rating = average_rating_new
-        post.save(update_fields=['average_rating'])
-
-        return Response({'message': 'Rating recorded successfully.'}, status=status.HTTP_200_OK)
+        return Response(
+            {'message': 'Rating recorded successfully.'},
+            status=status.HTTP_200_OK
+        )
 
 
