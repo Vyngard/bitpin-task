@@ -182,7 +182,7 @@ To run the file:
 1- you need to change the Debug mode in the Django app. Go to `settings.py` file in the `app` directory and change the `DEBUG` variable to `True`.   
 2- Also change the `ALLOWED_HOSTS` variable to `['*']`.   
 3- Run the project first, to have the database ready.   
-4- make sure that the post you want to test is already created. If the post already exists, make sure that it doesn't have any ratings.
+4- make sure that the post you want to test is already created. If the post already exists, make sure that it doesn't have any ratings.    
 5- Variables to edit:
 ```python
 # simulate_ratings.py
