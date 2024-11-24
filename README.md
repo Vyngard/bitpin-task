@@ -32,6 +32,9 @@ python manage.py createsuperuser
 ```bash
 python manage.py runserver
 ```
+> [!IMPORTANT]
+> There's already a superuser created with the name and password `bitpin` for testing purposes.
+> also there's a single post without any ratings, you can use it to test the application.
 
 ## API Endpoints
 1. Posts List
