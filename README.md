@@ -6,14 +6,14 @@ The application is designed to handle high performance under heavy load and incl
 ## Installation
 1. Clone the repository.
 ```bash
-git clone https://github.com/yourusername/bitpin-task.git
+git clone https://github.com/Vyngard/bitpin-task.git
 cd bitpin-task
 ```
 2. Create a virtual environment and activate it.
 ```bash
 # For Windows
-python3 -m venv venv
-source venv/bin/activate
+python -m venv venv
+source venv/Scripts/activate
 ```
 3. Install the required packages.
 ```bash
@@ -179,7 +179,7 @@ To run the file:
 1- you need to change the Debug mode in the Django app. Go to `settings.py` file in the `app` directory and change the `DEBUG` variable to `True`.   
 2- Also change the `ALLOWED_HOSTS` variable to `['*']`.   
 3- Run the project first, to have the database ready.   
-4- make sure that the post you want to test is already created, if it's not, you can create a new post using Django admin.
+4- make sure that the post you want to test is already created. If the post already exists, make sure that it doesn't have any ratings.
 5- Variables to edit:
 ```python
 # simulate_ratings.py
@@ -189,7 +189,12 @@ num_ratings = 20  # Number of users submitting ratings
 ratings_values = [1, 5]  # Ratings values to simulate
 method = EMA_URL  # Choose between EMA_URL, DYNAMIC_EMA_URL to compare it to Simple Average
 ```
-6- run the script using
+6- Activate the virtual environment
+```bash
+source venv/Scripts/activate
+```
+
+7- run the script using
 ```bash
 python simulate_ratings.py
 ```
@@ -209,7 +214,7 @@ This approach gives more weight to older ratings and less weight to new ones, pr
 ![fixed_alpha.png](formula_imgs/fixed_alpha.png)    
 
 3. **Dynamic ALPHA Exponential Moving Average (EMA) Method (Implemented in: `views_dynamic_alpha.py`)**    
-The Dynamic ALPHA EMA method improves upon the Fixed ALPHA EMA by adjusting the smoothing factor `(α)` based on the total number of ratings. 
+The Dynamic ALPHA EMA method improves upon the Fixed ALPHA EMA by adjusting the smoothing factor `(α) = 0.1` based on the total number of ratings. 
 This allows the method to be more responsive when there are fewer ratings and more stable as the number of ratings increases.    
 
 ![dynamic_alpha.png](formula_imgs/dynamic_alpha.png)    
