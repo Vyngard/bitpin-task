@@ -220,7 +220,7 @@ This allows the method to be more responsive when there are fewer ratings and mo
 ![dynamic_alpha.png](formula_imgs/dynamic_alpha.png)    
 
 ## Performance Considerations
-- Denormalization: The `Post` model stores `total_ratings` and `average_rating` to avoid expensive aggregation queries.
-- Atomic Transactions: Updates are performed within atomic transactions to ensure data integrity.
-- Efficient Updates: Use of `select_for_update()` and `F` expressions to minimize database hits and prevent race conditions.
-- Decimal Precision: Using the `Decimal` class for accurate arithmetic operations.
+- Denormalization: The `Post` model stores `total_ratings` and `average_rating` to avoid expensive aggregation queries when retrieving average ratings. This approach improves read performance by eliminating the need to compute these values on the fly.
+- Atomic Transactions: Updates are performed within atomic transactions using the `@transaction.atomic` decorator. This ensures data integrity by guaranteeing that all database operations within a transaction are completed successfully or rolled back in case of an error.
+- Efficient Updates: The application leverages `F` expressions and `update_or_create()` methods to perform atomic updates directly at the database level. This minimizes database hits and reduces the need to load objects into memory, enhancing performance and reducing the risk of race conditions.
+- Concurrency Handling: The use of atomic database operations and careful transaction management allows the system to handle a high number of concurrent ratings efficiently. By avoiding unnecessary locks and leveraging the database's capabilities, the application maintains data integrity without sacrificing performance.
