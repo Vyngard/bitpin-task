@@ -211,7 +211,7 @@ It is a straightforward calculation where each rating has an equal impact on the
 ![simple_average.png](formula_imgs/simple_average.png)
 
 2. **Fixed ALPHA Exponential Moving Average (EMA) Method (Implemented in: `views.py`)**   
-The Fixed ALPHA EMA method calculates the average rating using an Exponential Moving Average formula with a fixed smoothing factor `(α)`. 
+The Fixed ALPHA EMA method calculates the average rating using an Exponential Moving Average formula with a fixed smoothing factor `(α) = 0.1`. 
 This approach gives more weight to older ratings and less weight to new ones, providing a damping effect against sudden changes.
 
 ![fixed_alpha.png](formula_imgs/fixed_alpha.png)    
